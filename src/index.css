@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* 适老化基础配置：全局加大基础字号 */
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+    /* transition-colors 用于 B/C 端切换时背景平滑过渡 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}

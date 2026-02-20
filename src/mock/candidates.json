@@ -1,0 +1,71 @@
+[
+    {
+        "id": "cand-1",
+        "name": "李兰香",
+        "age": 58,
+        "gender": "女",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Lily&backgroundColor=14b8a6",
+        "expectedSalary": "3-4K",
+        "healthTags": [
+            "慢性病稳定",
+            "需要坐班"
+        ],
+        "skillTags": [
+            "懂厨艺",
+            "带过孙辈"
+        ],
+        "desc": "退休前在私企做行政后勤，有丰富的食堂管理和采购经验，做事细心有条理。"
+    },
+    {
+        "id": "cand-2",
+        "name": "张建国",
+        "age": 62,
+        "gender": "男",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&backgroundColor=14b8a6",
+        "expectedSalary": "4-5K",
+        "healthTags": [
+            "硬朗能干体力活",
+            "视力正常"
+        ],
+        "skillTags": [
+            "有驾照(C1)",
+            "擅长维修",
+            "精通绿化"
+        ],
+        "desc": "曾任公交修车厂技师，退休后想找个能活动筋骨的工作，熟悉各类机电维修和简单绿化。"
+    },
+    {
+        "id": "cand-3",
+        "name": "王秀梅",
+        "age": 60,
+        "gender": "女",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Rose&backgroundColor=14b8a6",
+        "expectedSalary": "3K以下",
+        "healthTags": [
+            "腿脚不便",
+            "只能半天"
+        ],
+        "skillTags": [
+            "会打毛衣",
+            "有耐心"
+        ],
+        "desc": "想找一份手工类或只需要打电话、简单接待的工作打发时间。"
+    },
+    {
+        "id": "cand-4",
+        "name": "刘强",
+        "age": 65,
+        "gender": "男",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=14b8a6",
+        "expectedSalary": "5-6K",
+        "healthTags": [
+            "硬朗能干体力活",
+            "无心脑血管病"
+        ],
+        "skillTags": [
+            "退伍军人",
+            "保安经验"
+        ],
+        "desc": "身体素质极好，想找夜班仓管或门岗安保，能够接受12小时轮班制。"
+    }
+]
