@@ -1,67 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { Search, MapPin, HeartPulse, Wrench, MessageSquareText } from 'lucide-react';
-import { getCandidates } from '../../utils/storage';
-import ChatWindow from '../../components/ChatWindow';
+import { useMemo, useState } from 'react';
+import { HeartPulse, MessageSquareText, Search, Sparkles, Wrench } from 'lucide-react';
+import ChatEntry from '../../components/chat/ChatEntry';
+import { createCandidateConversationSeed } from '../../chat/conversationSeeds';
+import { useDemoTarget } from '../../demo/useDemoTarget';
+import { useDataStore } from '../../store/useDataStore';
 
-interface Candidate {
-    id: string;
-    name: string;
-    age: number | string;
-    gender: string;
-    avatar: string;
-    expectedSalary: string;
-    healthTags: string[];
-    skillTags: string[];
-    desc: string;
+function normalizeText(value: string) {
+    return value.toLowerCase().replace(/\s+/g, '');
 }
 
 export default function TalentHall() {
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
-    const [isChatOpen, setIsChatOpen] = useState(false);
-    const [currentChatTarget, setCurrentChatTarget] = useState('');
+    const candidates = useDataStore((state) => state.candidates);
+    const [keyword, setKeyword] = useState('');
+    const selfCardTargetRef = useDemoTarget<HTMLDivElement>('talent-hall-self-card');
+    const heroTargetRef = useDemoTarget<HTMLDivElement>('talent-hall-hero');
 
-    useEffect(() => {
-        setCandidates(getCandidates());
-    }, []);
-
-    const handleChat = (name: string) => {
-        setCurrentChatTarget(name);
-        setIsChatOpen(true);
-    };
+    const filteredCandidates = useMemo(() => {
+        if (!keyword.trim()) {
+            return candidates;
+        }
+        const normalizedKeyword = normalizeText(keyword);
+        return candidates.filter((candidate) => {
+            const searchText = normalizeText([
+                candidate.name,
+                candidate.gender,
+                candidate.expectedSalary,
+                candidate.desc,
+                ...candidate.healthTags,
+                ...candidate.skillTags,
+            ].join(' '));
+            return searchText.includes(normalizedKeyword);
+        });
+    }, [candidates, keyword]);
 
     return (
         <div className="container mx-auto px-6 py-8">
-            {/* 商务风头部与搜索 */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-teal-50">
+            <div ref={heroTargetRef} className="mb-10 flex flex-col items-center justify-between gap-6 rounded-2xl border border-teal-50 bg-white p-6 shadow-sm md:flex-row">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">牛人大厅 / 银发人才库</h1>
-                    <p className="text-gray-500">高效寻觅适合您企业的经验长者，降低用工成本</p>
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+                        <Sparkles className="h-3.5 w-3.5" /> 企业版实时人才库
+                    </div>
+                    <h1 className="mb-2 text-2xl font-bold text-gray-900">牛人大厅 / 银发人才库</h1>
+                    <p className="text-gray-500">支持本地即时筛选，长者端保存后的简历会同步出现在这里。</p>
                 </div>
-                <div className="flex w-full md:w-auto relative">
+                <div className="relative flex w-full md:w-auto">
                     <input
                         type="text"
+                        value={keyword}
+                        onChange={(event) => setKeyword(event.target.value)}
                         placeholder="搜索技能标签，如：绿化、保洁、会厨艺..."
-                        className="w-full md:w-96 pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all"
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 transition-all focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30 md:w-96"
                     />
-                    <Search className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
-                    <button className="ml-3 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors">
-                        搜索
-                    </button>
+                    <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                 </div>
             </div>
 
-            {/* 履历网格 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {candidates.map(candidate => (
-                    <div key={candidate.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-teal-300 hover:shadow-lg transition-all flex flex-col h-full group">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="flex gap-4 items-center">
-                                <img src={candidate.avatar} alt="头像" className="w-16 h-16 rounded-full bg-teal-50 object-cover" />
+            {keyword.trim() && (
+                <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-700">
+                    当前关键词“{keyword}”共匹配到 {filteredCandidates.length} 位候选人。
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCandidates.map((candidate) => (
+                    <div
+                        key={candidate.id}
+                        ref={candidate.isSelf ? selfCardTargetRef : undefined}
+                        className="group flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-teal-300 hover:shadow-lg"
+                    >
+                        <div className="mb-6 flex items-start justify-between">
+                            <div className="flex items-center gap-4">
+                                <img src={candidate.avatar} alt="头像" className="h-16 w-16 rounded-full bg-teal-50 object-cover" />
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                                    <h3 className="text-xl font-bold text-gray-900 transition-colors group-hover:text-teal-700">
                                         {candidate.name}
+                                        {candidate.isSelf && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">我的简历</span>}
                                     </h3>
-                                    <div className="flex gap-2 text-sm text-gray-500 mt-1">
+                                    <div className="mt-1 flex gap-2 text-sm text-gray-500">
                                         <span>{candidate.age} 岁</span>
                                         <span className="text-gray-300">|</span>
                                         <span>{candidate.gender}</span>
@@ -70,64 +85,70 @@ export default function TalentHall() {
                             </div>
                             <div className="text-right">
                                 <div className="text-lg font-bold text-teal-600">{candidate.expectedSalary}</div>
-                                <div className="text-xs text-gray-400 mt-1">期望薪资</div>
+                                <div className="mt-1 text-xs text-gray-400">期望薪资</div>
                             </div>
                         </div>
 
+                        {candidate.isSelf && (
+                            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                                这张卡是刚刚在长者端保存的档案，评委此时能直观看到双端数据已经同步完成。
+                            </div>
+                        )}
+
                         <div className="flex-1 space-y-4">
-                            {/* 健康标签 */}
                             <div>
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                    <HeartPulse className="w-4 h-4 text-red-400" /> 身体状况评价
+                                <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                    <HeartPulse className="h-4 w-4 text-red-400" /> 身体状况评价
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {candidate.healthTags?.length ? candidate.healthTags.map(tag => (
-                                        <span key={tag} className="px-2.5 py-1 bg-red-50 text-red-700 rounded text-sm border border-red-100">
+                                    {candidate.healthTags.length > 0 ? candidate.healthTags.map((tag) => (
+                                        <span key={tag} className="rounded border border-red-100 bg-red-50 px-2.5 py-1 text-sm text-red-700">
                                             {tag}
                                         </span>
                                     )) : <span className="text-sm text-gray-400">未填写</span>}
                                 </div>
                             </div>
 
-                            {/* 技能标签 */}
                             <div>
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                    <Wrench className="w-4 h-4 text-blue-400" /> 技能特长
+                                <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                    <Wrench className="h-4 w-4 text-blue-400" /> 技能特长
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {candidate.skillTags?.length ? candidate.skillTags.map(tag => (
-                                        <span key={tag} className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded text-sm border border-blue-100">
+                                    {candidate.skillTags.length > 0 ? candidate.skillTags.map((tag) => (
+                                        <span key={tag} className="rounded border border-blue-100 bg-blue-50 px-2.5 py-1 text-sm text-blue-700">
                                             {tag}
                                         </span>
                                     )) : <span className="text-sm text-gray-400">未填写</span>}
                                 </div>
                             </div>
 
-                            {/* 自我介绍截断 */}
                             <div className="pt-2">
-                                <p className="text-sm text-gray-600 line-clamp-2 bg-gray-50 p-2 rounded border border-gray-100/50">
-                                    {candidate.desc || "长者暂未留下自我介绍"}
+                                <p className="line-clamp-3 rounded border border-gray-100/50 bg-gray-50 p-3 text-sm leading-6 text-gray-600">
+                                    {candidate.desc || '长者暂未留下自我介绍'}
                                 </p>
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => handleChat(candidate.name)}
-                            className="mt-6 w-full py-3 bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors border border-teal-100 hover:border-transparent"
-                        >
-                            <MessageSquareText className="w-5 h-5" />
-                            打招呼
-                        </button>
+                        <ChatEntry seed={createCandidateConversationSeed(candidate)}>
+                            {({ openConversation }) => (
+                                <button
+                                    onClick={openConversation}
+                                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-teal-100 bg-teal-50 py-3 font-medium text-teal-700 transition-colors hover:border-transparent hover:bg-teal-600 hover:text-white"
+                                >
+                                    <MessageSquareText className="h-5 w-5" />
+                                    打招呼
+                                </button>
+                            )}
+                        </ChatEntry>
                     </div>
                 ))}
             </div>
 
-            <ChatWindow
-                isOpen={isChatOpen}
-                onClose={() => setIsChatOpen(false)}
-                targetName={currentChatTarget}
-                appMode="b-end"
-            />
+            {filteredCandidates.length === 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center text-gray-500 shadow-sm">
+                    没有找到匹配的人才，试试更换关键词，或者先在长者端保存一份新的微档案。
+                </div>
+            )}
         </div>
     );
 }
